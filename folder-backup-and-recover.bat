@@ -4,28 +4,14 @@ echo Backup Folder and Recover
 echo Written by Patrick Mayer 2019
 echo ******************************
 
-:echo User: %username%
-
 set folderDate=%date:~-4%-%date:~-7,2%-%date:~-10,2%
-set backupLocationBase=P:\folder-backup-and-recover
-:set backupTarget=C:\Users\%username%\Favorites
-
-:echo Location: %backupLocation%
-:echo Target: %backupTarget%
-
-:: Check for Arguments. If not given => getAction is called.
-:: Arguments:   b => Backup
-::              r => Recover
-
-if ["%~1"]==[] goto getAction
-if ["%~1"]==["b"] goto backup_job
-if ["%~1"]==["r"] goto recover_job
+set backupLocationBase=P:\folder-backup-and-recover\%folderDate%
 
 goto getType
 
 :: Select Type of Job
 :getType
-set /p type="(o)utlook signature, (f)avourites:"
+set /p type="(o)utlook signature, (f)avorites, (e)xcel macros:"
 
 if "%type%" == "o" ( 
     set backupTarget = C:\Users\%username%\Favorites 
@@ -33,7 +19,11 @@ if "%type%" == "o" (
 )
 if "%type%" == "f" ( 
     set backupTarget = C:\Users\%username%\Favorites 
-    set backupLocation = %backupLocationBase%\outlook
+    set backupLocation = %backupLocationBase%\favorites
+)
+if "%type%" == "e" ( 
+    set backupTarget = C:\Users\%username%\Favorites 
+    set backupLocation = %backupLocationBase%\excel
 )
 if "%type%" == "q" ( goto EOF )
 if "%type%" == "exit" ( goto EOF ) else ( goto wrong_input )
@@ -50,7 +40,12 @@ if "%action%" == "exit" ( goto EOF ) else ( goto wrong_input )
 
 :: Backup Job
 :backup_job
-mkdir %backupLocation%
+if exist %backupLocation% (
+    echo %backupLocation% already exists.
+) else (
+    echo %backupLocation% not existent. Creating now..
+    mkdir %backupLocation%
+)
 xcopy "%backupTarget%\*" "%backupLocation%\" /SY
 echo Backup done.
 goto EOF
