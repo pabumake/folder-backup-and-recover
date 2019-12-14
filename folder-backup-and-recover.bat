@@ -4,14 +4,14 @@ echo Backup Folder and Recover
 echo Written by Patrick Mayer 2019
 echo ******************************
 
-echo User: %username%
+:echo User: %username%
 
 set folderDate=%date:~-4%-%date:~-7,2%-%date:~-10,2%
-set backupLocation=P:\folder-backup-and-recover
-set backupTarget=C:\Users\%username%\Favorites
+set backupLocationBase=P:\folder-backup-and-recover
+:set backupTarget=C:\Users\%username%\Favorites
 
-echo Location: %backupLocation%
-echo Target: %backupTarget%
+:echo Location: %backupLocation%
+:echo Target: %backupTarget%
 
 :: Check for Arguments. If not given => getAction is called.
 :: Arguments:   b => Backup
@@ -21,9 +21,25 @@ if ["%~1"]==[] goto getAction
 if ["%~1"]==["b"] goto backup_job
 if ["%~1"]==["r"] goto recover_job
 
-goto getAction
+goto getType
 
 :: Select Type of Job
+:getType
+set /p type="(o)utlook signature, (f)avourites:"
+
+if "%type%" == "o" ( 
+    set backupTarget = C:\Users\%username%\Favorites 
+    set backupLocation = %backupLocationBase%\outlook
+)
+if "%type%" == "f" ( 
+    set backupTarget = C:\Users\%username%\Favorites 
+    set backupLocation = %backupLocationBase%\outlook
+)
+if "%type%" == "q" ( goto EOF )
+if "%type%" == "exit" ( goto EOF ) else ( goto wrong_input )
+goto getAction
+
+:: Select if backup or recovery
 :getAction
 set /p action="(b)ackup or (r)ecover - (q)uit:"
 
@@ -47,7 +63,7 @@ goto EOF
 
 :: Chatch all other Inputs. 
 :wrong_input
-echo Unrecognized input. 'b' for Backup and 'r' for Recovery are the only Options.
+echo Unrecognized input. Please check for a valid input.
 goto getAction
 
 :EOF
