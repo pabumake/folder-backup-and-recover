@@ -1,4 +1,5 @@
 @echo off
+setlocal enabledelayedexpansion
 echo ******************************
 echo Backup Folder and Recover 
 echo Written by Patrick Mayer 2019
@@ -11,19 +12,30 @@ goto getType
 
 :: Select Type of Job
 :getType
-set /p type="(o)utlook signature, (f)avorites, (e)xcel macros:"
+set /p type="(o)utlook signature, (f)avorites, (e)xcel macros or (all) for everything:"
 
 if "%type%" == "o" ( 
-    set backupTarget = C:\Users\%username%\Favorites 
-    set backupLocation = %backupLocationBase%\outlook
+    set backupTarget=C:\Users\%username%\AppData\Roaming\Microsoft\Signatures
+    set backupLocation=%backupLocationBase%\outlook
 )
 if "%type%" == "f" ( 
-    set backupTarget = C:\Users\%username%\Favorites 
-    set backupLocation = %backupLocationBase%\favorites
+    set backupTarget=C:\Users\%username%\Favorites
+    set backupLocation=%backupLocationBase%\favorites
 )
 if "%type%" == "e" ( 
-    set backupTarget = C:\Users\%username%\Favorites 
-    set backupLocation = %backupLocationBase%\excel
+    set backupTarget=C:\Users\%username%\AppData\Roaming\Microsoft\Excel\XLSTART
+    set backupLocation=%backupLocationBase%\office\XLSTART
+)
+if "%type%" == "all" (
+    set len=3
+    set backup[0].Target=C:\Users\%username%\AppData\Roaming\Microsoft\Signatures
+    set backup[0].Location=%backupLocationBase%\outlook
+    set backup[1].Target=C:\Users\%username%\Favorites
+    set backup[1].Location=%backupLocationBase%\favorites
+    set backup[2].Target=C:\Users\%username%\AppData\Roaming\Microsoft\Excel\XLSTART
+    set backup[2].Location=%backupLocationBase%\office\XLSTART
+    set i=0
+    goto looperman
 )
 if "%type%" == "q" ( goto EOF )
 if "%type%" == "exit" ( goto EOF ) else ( goto wrong_input )
@@ -46,15 +58,76 @@ if exist %backupLocation% (
     echo %backupLocation% not existent. Creating now..
     mkdir %backupLocation%
 )
+
+echo BackupTarget "%backupTarget%\*"
+
 xcopy "%backupTarget%\*" "%backupLocation%\" /SY
 echo Backup done.
 goto EOF
 
 :: Recover Job
 :recover_job
-xcopy "%backupLocation%\*" "%backupTarget%\" /SY
+xcopy "%backupLocation%\" "%backupTarget%\" /SY
 echo Recover done.
 goto EOF
+
+:looperman
+set /p loop_action="(b)ackup or (r)ecover - (q)uit:"
+if "%loop_action%" == "b" ( 
+    goto looperman_b
+)
+if "%loop_action%" == "r" (
+    goto looperman_r
+)
+if "%loop_action%" == "q" ( goto EOF )
+if "%loop_action%" == "exit" ( goto EOF ) else ( goto wrong_input )
+
+:looperman_b
+if %i% equ %len% goto :EOF
+set cur.Target=""
+set cur.Location=""
+
+for /f "usebackq delims==. tokens=1-3" %%j in (`set backup[%i%]`) do ( 
+   set cur.%%k=%%l
+) 
+echo =================================================================
+
+if exist %cur.Location% (
+    echo %cur.Location% already exists.
+) else (
+    echo %cur.Location% not existent. Creating now..
+    mkdir %cur.Location%
+)
+
+echo BackupTarget "%cur.Target%\*"
+
+xcopy "%cur.Target%\*" "%cur.Location%\" /SY
+echo Backup done.
+
+echo =================================================================
+
+set /a i = %i%+1
+goto looperman_b
+
+:looperman_r
+if %i% equ %len% goto :EOF
+set cur.Target=""
+set cur.Location=""
+
+for /f "usebackq delims==. tokens=1-3" %%j in (`set backup[%i%]`) do ( 
+   set cur.%%k=%%l
+) 
+echo =================================================================
+
+echo RestoreLocation "%cur.Location%\*"
+
+xcopy "%cur.Location%\*" "%cur.Target%\" /SY
+echo Backup done.
+
+echo =================================================================
+
+set /a i = %i%+1
+goto looperman_r
 
 :: Chatch all other Inputs. 
 :wrong_input
