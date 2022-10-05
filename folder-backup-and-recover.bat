@@ -27,13 +27,19 @@ if "%type%" == "e" (
     set backupLocation=%backupLocationBase%\office\XLSTART
 )
 if "%type%" == "all" (
-    set len=3
+    set len=6
     set backup[0].Target=C:\Users\%username%\AppData\Roaming\Microsoft\Signatures
     set backup[0].Location=%backupLocationBase%\outlook
     set backup[1].Target=C:\Users\%username%\Favorites
     set backup[1].Location=%backupLocationBase%\favorites
     set backup[2].Target=C:\Users\%username%\AppData\Roaming\Microsoft\Excel\XLSTART
     set backup[2].Location=%backupLocationBase%\office\XLSTART
+	set backup[3].Target=C:\Users\%username%\Desktop
+	set backup[3].Location=%backupLocationBase%\desktop
+	set backup[4].Target=C:\Users\%username%\Documents
+	set backup[4].Location=%backupLocationBase%\documents
+	set backup[5].Target=C:\Users\%username%\Pictures
+	set backup[5].Location=%backupLocationBase%\pictures
     set i=0
     goto looperman
 )
